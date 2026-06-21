@@ -1,6 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { doctorDetailStyles as s } from "../assets/dummyStyles";
-import { User, Eye, EyeOff, X, XCircle, EyeClosed, Calendar, Plus, Trash2 } from "lucide-react";
+import {
+  User,
+  Eye,
+  EyeOff,
+  XCircle,
+  Calendar,
+  Plus,
+  Trash2,
+  CheckCircle,
+} from "lucide-react";
 
 function timeStringToMinutes(t) {
   if (!t) return 0;
@@ -35,10 +44,7 @@ function formatDateISO(iso) {
     "Dec",
   ];
 
-  const day = String(Number(d));
-  const month = monthNames[dateObj.getMonth()] || "";
-
-  return `${day} ${month} ${y}`;
+  return `${Number(d)} ${monthNames[dateObj.getMonth()]} ${y}`;
 }
 
 const AddPage = () => {
@@ -99,18 +105,8 @@ const AddPage = () => {
     setToast({ show: true, type, message });
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
   function handleImage(e) {
     const file = e.target.files?.[0];
-
     if (!file) return;
 
     if (form.imagePreview && form.imageFile) {
@@ -179,10 +175,7 @@ const AddPage = () => {
         (a, b) => timeStringToMinutes(a) - timeStringToMinutes(b)
       );
 
-      return {
-        ...prev,
-        schedule,
-      };
+      return { ...prev, schedule };
     });
 
     setSlotHour("");
@@ -200,10 +193,7 @@ const AddPage = () => {
         delete schedule[date];
       }
 
-      return {
-        ...prev,
-        schedule,
-      };
+      return { ...prev, schedule };
     });
   }
 
@@ -352,22 +342,10 @@ const AddPage = () => {
     }
   }
 
-  const slots = getFlatSlots(form.schedule);
+  const flatSlots = getFlatSlots(form.schedule);
 
   return (
     <div className={s.pageContainer}>
-      {toast.show && (
-        <div
-          className={
-            toast.type === "success"
-              ? "fixed top-5 right-5 z-50 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg"
-              : "fixed top-5 right-5 z-50 bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg"
-          }
-        >
-          {toast.message}
-        </div>
-      )}
-
       <div className={`${s.maxWidthContainerLg} ${s.headerContainer}`}>
         <div className={s.headerFlexContainer}>
           <div className={s.headerIconContainer}>
@@ -403,7 +381,7 @@ const AddPage = () => {
                   <button
                     type="button"
                     onClick={removeImage}
-                    className={s.removeImageButton + " " + s.cursorPointer}
+                    className={`${s.removeImageButton} ${s.cursorPointer}`}
                   >
                     <XCircle size={14} />
                   </button>
@@ -411,45 +389,53 @@ const AddPage = () => {
               )}
             </div>
           </div>
-<input
-className={s.inputBase}
-placeholder="Full Name"
-value={form.name}
-onChange={(e) => setForm({...form, name: e.target.value})}/>
-
-
-<input
-className={s.inputBase}
-placeholder="Specialization"
-value={form.specialization}
-onChange={(e) => setForm({...form, specialization: e.target.value})}/>
-         
 
           <input
-className={s.inputBase}
-placeholder="Location"
-value={form.location}
-onChange={(e) => setForm({...form, location: e.target.value})}/>
-        
-<input
-className={s.inputBase}
-placeholder="Experience"
-value={form.experience}
-onChange={(e) => setForm({...form, experience: e.target.value})}/>
+            className={s.inputBase}
+            placeholder="Full Name"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
 
           <input
-className={s.inputBase}
-placeholder="qualification"
-value={form.qualification}
-onChange={(e) => setForm({...form, qualification: e.target.value})}/>
+            className={s.inputBase}
+            placeholder="Specialization"
+            value={form.specialization}
+            onChange={(e) =>
+              setForm({ ...form, specialization: e.target.value })
+            }
+          />
 
           <input
-className={s.inputBase}
-placeholder="Consultation Fee"
-value={form.fee}
-onChange={(e) => setForm({...form, fee: e.target.value})}/>
+            className={s.inputBase}
+            placeholder="Location"
+            value={form.location}
+            onChange={(e) => setForm({ ...form, location: e.target.value })}
+          />
 
-          
+          <input
+            className={s.inputBase}
+            placeholder="Experience"
+            value={form.experience}
+            onChange={(e) => setForm({ ...form, experience: e.target.value })}
+          />
+
+          <input
+            className={s.inputBase}
+            placeholder="Qualification"
+            value={form.qualifications}
+            onChange={(e) =>
+              setForm({ ...form, qualifications: e.target.value })
+            }
+          />
+
+          <input
+            className={s.inputBase}
+            placeholder="Consultation Fee"
+            type="number"
+            value={form.fee}
+            onChange={(e) => setForm({ ...form, fee: e.target.value })}
+          />
 
           <input
             className={s.inputBase}
@@ -460,95 +446,107 @@ onChange={(e) => setForm({...form, fee: e.target.value})}/>
             step={0.1}
             value={form.rating}
             onChange={(e) => {
-              const v = e.target.value;
+              const value = e.target.value;
 
-              // allow clearing
-              if (v === "") {
-                setForm((p) => ({ ...p, rating: "" }));
+              if (value === "") {
+                setForm((prev) => ({ ...prev, rating: "" }));
                 return;
               }
 
-              const n = Number(v);
+              const n = Number(value);
               if (Number.isNaN(n)) return;
 
-              // clamp between 1 and 5
               const clamped = Math.max(1, Math.min(5, n));
-
-              // keep only 1 decimal place
               const fixed = Math.round(clamped * 10) / 10;
 
-              setForm((p) => ({ ...p, rating: fixed.toString() }));
+              setForm((prev) => ({ ...prev, rating: fixed.toString() }));
             }}
             onBlur={() => {
-              // force 1 decimal place on blur
-              setForm((p) => {
-                if (!p.rating) return p;
-                const n = Number(p.rating);
-                if (Number.isNaN(n)) return { ...p, rating: "" };
+              setForm((prev) => {
+                if (!prev.rating) return prev;
+
+                const n = Number(prev.rating);
+                if (Number.isNaN(n)) return { ...prev, rating: "" };
 
                 const clamped = Math.max(1, Math.min(5, n));
-                return { ...p, rating: clamped.toFixed(1) };
+                return { ...prev, rating: clamped.toFixed(1) };
               });
             }}
           />
-   <input
-className={s.inputBase}
-placeholder="Patients"
-value={form.patients}
-onChange={(e) => setForm({...form, patients: e.target.value})}/>
 
-   <input
-className={s.inputBase}
-placeholder="Success Rate"
-value={form.success}
-onChange={(e) => setForm({...form, success: e.target.value})}/>
+          <input
+            className={s.inputBase}
+            placeholder="Patients"
+            value={form.patients}
+            onChange={(e) => setForm({ ...form, patients: e.target.value })}
+          />
 
-   <input
-className={s.inputBase}
-placeholder="Doctor Email"
-value={form.email}
-onChange={(e) => setForm({...form, email: e.target.value})}/>
+          <input
+            className={s.inputBase}
+            placeholder="Success Rate"
+            value={form.success}
+            onChange={(e) => setForm({ ...form, success: e.target.value })}
+          />
 
-<div className="relative">
-  <input
-    className={s.inputBase + " " + s.inputWithIcon}
-    placeholder="Doctor Password"
-    type={showPassword ? "text" : "password"}
-    value={form.password}
-    onChange={(e) =>
-      setForm({
-        ...form,
-        password: e.target.value,
-      })
-    }
-  />
-  <button type="button" onClick={() => setShowPassword((s) => !s)}
-    className={s.passwordToggleButton + " "+s.cursorPointer}>
-      {showPassword ? <Eye size={18}/> : <EyeClosed size={18}/> }
-    </button>
-</div> 
+          <input
+            className={s.inputBase}
+            placeholder="Doctor Email"
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
 
-<select className={s.inputBase} value= {form.availability}
-onChange={(e) => {
-  setForm({
-    ...form, availability:e.target.value,
-  })
-}}
->
-<option value="Available">Available</option>
-<option value="Unavailable">Unavailable</option>
-</select>
-<textarea className={s.textareaBase + " md:col-span-2"}
-rows={3} placeholder="About Doctor"
-value={form.about}
-onChange={(e) =>
-  setForm({
-    ...form,about:e.target.value,
-  })
-}></textarea>
+          <div className="relative">
+            <input
+              className={`${s.inputBase} ${s.inputWithIcon}`}
+              placeholder="Doctor Password"
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  password: e.target.value,
+                })
+              }
+            />
 
-  {/* SCHEDULE */}
-          <div className={s.scheduleContainer + " md:col-span-2"}>
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className={`${s.passwordToggleButton} ${s.cursorPointer}`}
+            >
+              {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+            </button>
+          </div>
+
+          <select
+            className={s.inputBase}
+            value={form.availability}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                availability: e.target.value,
+              })
+            }
+          >
+            <option value="Available">Available</option>
+            <option value="Unavailable">Unavailable</option>
+          </select>
+
+          <textarea
+            className={`${s.textareaBase} md:col-span-2`}
+            rows={3}
+            placeholder="About Doctor"
+            value={form.about}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                about: e.target.value,
+              })
+            }
+          />
+
+          <div className={`${s.scheduleContainer} md:col-span-2`}>
             <div className={s.scheduleHeader}>
               <Calendar className="text-emerald-600" />
               <p className={s.scheduleTitle}>Add Schedule Slots</p>
@@ -569,11 +567,14 @@ onChange={(e) =>
                 className={s.scheduleTimeSelect}
               >
                 <option value="">Hour</option>
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <option key={i} value={String(i + 1)}>
-                    {i + 1}
-                  </option>
-                ))}
+                {Array.from({ length: 12 }).map((_, i) => {
+                  const hour = String(i + 1).padStart(2, "0");
+                  return (
+                    <option key={hour} value={hour}>
+                      {hour}
+                    </option>
+                  );
+                })}
               </select>
 
               <select
@@ -581,11 +582,14 @@ onChange={(e) =>
                 onChange={(e) => setSlotMinute(e.target.value)}
                 className={s.scheduleTimeSelect}
               >
-                {Array.from({ length: 60 }).map((_, i) => (
-                  <option key={i} value={String(i).padStart(2, "0")}>
-                    {String(i).padStart(2, "0")}
-                  </option>
-                ))}
+                {Array.from({ length: 60 }).map((_, i) => {
+                  const minute = String(i).padStart(2, "0");
+                  return (
+                    <option key={minute} value={minute}>
+                      {minute}
+                    </option>
+                  );
+                })}
               </select>
 
               <select
@@ -593,29 +597,31 @@ onChange={(e) =>
                 onChange={(e) => setSlotAmpm(e.target.value)}
                 className={s.scheduleTimeSelect}
               >
-                <option>AM</option>
-                <option>PM</option>
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
               </select>
 
               <button
                 type="button"
                 onClick={addSlotToForm}
-                className={s.addSlotButton + " " + s.cursorPointer}
+                className={`${s.addSlotButton} ${s.cursorPointer}`}
               >
                 <Plus size={18} /> Add Slot
               </button>
             </div>
 
             <div className={s.slotsGrid}>
-              {getFlatSlots(form.schedule).map(({ date, time }) => (
+              {flatSlots.map(({ date, time }) => (
                 <div
-                  key={date + time}
-                  className={s.slotItem + " " + s.cursorPointer}
+                  key={`${date}-${time}`}
+                  className={`${s.slotItem} ${s.cursorPointer}`}
                 >
                   <span>
                     {formatDateISO(date)} — {time}
                   </span>
+
                   <button
+                    type="button"
                     onClick={() => removeSlot(date, time)}
                     className="text-rose-500"
                     aria-label={`Remove slot ${date} ${time}`}
@@ -627,61 +633,53 @@ onChange={(e) =>
             </div>
           </div>
 
-    {/* TOAST */}
-      {toast.show && (
-        <div
-          className={s.toastContainer + " " + 
-            (toast.type === "success" ? s.toastSuccess : s.toastError)}
-        >
-          {toast.type === "success" ? (
-            <CheckCircle size={22} />
-          ) : (
-            <XCircle size={22} />
+          {toast.show && (
+            <div
+              className={`${s.toastContainer} ${
+                toast.type === "success" ? s.toastSuccess : s.toastError
+              }`}
+            >
+              {toast.type === "success" ? (
+                <CheckCircle size={22} />
+              ) : (
+                <XCircle size={22} />
+              )}
+              <span>{toast.message}</span>
+            </div>
           )}
-          <span>{toast.message}</span>
+
+          <div className={s.doctorListContainer}>
+  {doctorList.length ? (
+    <div className={s.doctorListGrid}>
+      {doctorList.map((d) => (
+        <div key={d.id || d._id} className={s.doctorCard}>
+          <div className={s.doctorCardContent}>
+            <img
+              src={d.imageUrl || d.imagePreview}
+              alt={d.name}
+              className={s.doctorCardImage}
+            />
+          </div>
+
+          <div>
+            <div className={s.doctorName}>{d.name}</div>
+            <div className={s.doctorSpecialization}>
+              {d.specialization}
+            </div>
+          </div>
         </div>
-      )}
-
-<div className={s.submitButtonContainer}>
-  <button
-    type="submit"
-    disabled={loading}
-    className={
-      s.submitButton +
-      " " +
-      s.cursorPointer +
-      " " +
-      (loading
-        ? s.submitButtonDisabled
-        : s.submitButtonEnabled)
-    }
-  >
-    {loading ? "Adding..." : "Add Doctor to Team"}
-  </button>
+      ))}
+    </div>
+  ) : (
+    <p className={s.emptyState}>No Doctor Yet</p>
+  )}
 </div>
-
-export default AddPage;
-
-function InputField({
-  label,
-  name,
-  value,
-  onChange,
-  type = "text",
-  placeholder = "",
-}) {
-  return (
-    <div>
-      <label className={s.label}>{label}</label>
-
-      <input
-        name={name}
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className={s.input}
-      />
+        </form>
+      
+          
+      </div>
     </div>
   );
-}
+};
+
+export default AddPage;
