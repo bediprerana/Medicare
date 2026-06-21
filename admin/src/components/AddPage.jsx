@@ -163,9 +163,7 @@ const AddPage = () => {
     setForm((prev) => {
       const schedule = { ...prev.schedule };
 
-      if (!schedule[slotDate]) {
-        schedule[slotDate] = [];
-      }
+      if (!schedule[slotDate]) schedule[slotDate] = [];
 
       if (!schedule[slotDate].includes(time)) {
         schedule[slotDate].push(time);
@@ -189,9 +187,7 @@ const AddPage = () => {
 
       schedule[date] = schedule[date].filter((item) => item !== time);
 
-      if (!schedule[date].length) {
-        delete schedule[date];
-      }
+      if (!schedule[date].length) delete schedule[date];
 
       return { ...prev, schedule };
     });
@@ -272,9 +268,7 @@ const AddPage = () => {
       fd.append("password", form.password);
       fd.append("schedule", JSON.stringify(form.schedule));
 
-      if (form.imageFile) {
-        fd.append("image", form.imageFile);
-      }
+      if (form.imageFile) fd.append("image", form.imageFile);
 
       const res = await fetch("http://localhost:4000/api/doctors", {
         method: "POST",
@@ -325,9 +319,7 @@ const AddPage = () => {
         password: "",
       });
 
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
 
       setSlotDate("");
       setSlotHour("");
@@ -445,33 +437,7 @@ const AddPage = () => {
             max={5}
             step={0.1}
             value={form.rating}
-            onChange={(e) => {
-              const value = e.target.value;
-
-              if (value === "") {
-                setForm((prev) => ({ ...prev, rating: "" }));
-                return;
-              }
-
-              const n = Number(value);
-              if (Number.isNaN(n)) return;
-
-              const clamped = Math.max(1, Math.min(5, n));
-              const fixed = Math.round(clamped * 10) / 10;
-
-              setForm((prev) => ({ ...prev, rating: fixed.toString() }));
-            }}
-            onBlur={() => {
-              setForm((prev) => {
-                if (!prev.rating) return prev;
-
-                const n = Number(prev.rating);
-                if (Number.isNaN(n)) return { ...prev, rating: "" };
-
-                const clamped = Math.max(1, Math.min(5, n));
-                return { ...prev, rating: clamped.toFixed(1) };
-              });
-            }}
+            onChange={(e) => setForm({ ...form, rating: e.target.value })}
           />
 
           <input
@@ -624,7 +590,6 @@ const AddPage = () => {
                     type="button"
                     onClick={() => removeSlot(date, time)}
                     className="text-rose-500"
-                    aria-label={`Remove slot ${date} ${time}`}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -648,35 +613,45 @@ const AddPage = () => {
             </div>
           )}
 
-          <div className={s.doctorListContainer}>
-  {doctorList.length ? (
-    <div className={s.doctorListGrid}>
-      {doctorList.map((d) => (
-        <div key={d.id || d._id} className={s.doctorCard}>
-          <div className={s.doctorCardContent}>
-            <img
-              src={d.imageUrl || d.imagePreview}
-              alt={d.name}
-              className={s.doctorCardImage}
-            />
+          <div className={s.submitButtonContainer}>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`${s.submitButton} ${s.cursorPointer} ${
+                loading ? s.submitButtonDisabled : s.submitButtonEnabled
+              }`}
+            >
+              {loading ? "Adding..." : "Add Doctor to Team"}
+            </button>
           </div>
 
-          <div>
-            <div className={s.doctorName}>{d.name}</div>
-            <div className={s.doctorSpecialization}>
-              {d.specialization}
-            </div>
+          <div className={s.doctorListContainer}>
+            {doctorList.length ? (
+              <div className={s.doctorListGrid}>
+                {doctorList.map((d) => (
+                  <div key={d.id || d._id} className={s.doctorCard}>
+                    <div className={s.doctorCardContent}>
+                      <img
+                        src={d.imageUrl || d.imagePreview}
+                        alt={d.name}
+                        className={s.doctorCardImage}
+                      />
+                    </div>
+
+                    <div>
+                      <div className={s.doctorName}>{d.name}</div>
+                      <div className={s.doctorSpecialization}>
+                        {d.specialization}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className={s.emptyState}>No Doctor Yet</p>
+            )}
           </div>
-        </div>
-      ))}
-    </div>
-  ) : (
-    <p className={s.emptyState}>No Doctor Yet</p>
-  )}
-</div>
         </form>
-      
-          
       </div>
     </div>
   );
